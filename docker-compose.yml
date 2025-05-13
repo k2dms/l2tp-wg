@@ -1,0 +1,9 @@
+version: '3'
+services:
+  squid-proxy:
+    build:
+      context: .
+    container_name: squid-proxy
+    ports:
+      - "8089:8089"
+    restart: unless-stopped
