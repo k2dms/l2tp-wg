@@ -1,19 +1,16 @@
-FROM alpine:latest
+FROM ubuntu:22.04
 
 LABEL maintainer="k2dms" \
-      description="Minimal silent proxy container" \
-      vendor="STL" \
+      description="Silent Squid Proxy" \
+      vendor="HOME" \
       version="1.0"
 
-RUN apk --no-cache add tinyproxy
+RUN apt-get update && \
+    apt-get install -y squid && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Настройка tinyproxy
-RUN sed -i 's/^Port 8888/Port 8089/' /etc/tinyproxy/tinyproxy.conf && \
-    sed -i 's/^LogLevel Info/LogLevel Critical/' /etc/tinyproxy/tinyproxy.conf && \
-    echo "DisableViaHeader Yes" >> /etc/tinyproxy/tinyproxy.conf && \
-    echo "MaxClients 50" >> /etc/tinyproxy/tinyproxy.conf && \
-    echo "Allow 0.0.0.0/0" >> /etc/tinyproxy/tinyproxy.conf
+COPY squid.conf /etc/squid/squid.conf
 
 EXPOSE 8089
 
-CMD ["tinyproxy", "-d"]
+CMD ["squid", "-N", "-f", "/etc/squid/squid.conf"]
