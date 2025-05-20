@@ -3,7 +3,7 @@ version: '3.8'
 services:
   squid-proxy:
     build:
-      context: ./squid
+      context: .
     container_name: squid-proxy
     ports:
       - "8089:8089"
