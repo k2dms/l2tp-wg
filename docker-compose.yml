@@ -1,9 +1,33 @@
-version: '3'
+version: '3.8'
+
 services:
   squid-proxy:
     build:
-      context: .
+      context: ./squid
     container_name: squid-proxy
     ports:
       - "8089:8089"
     restart: unless-stopped
+
+  wg-easy:
+    image: weejewel/wg-easy
+    container_name: wg-easy
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - WG_HOST=your.public.ip.address       # Укажи свой внешний IP или домен
+      - PASSWORD=supersecurepassword         # Пароль для входа в web-интерфейс
+      - WG_PORT=51820                        # порт для самого WireGuard (можно кастомизировать)
+    ports:
+      - "51822:51821"                        # веб-панель доступна на http://host:51822
+      - "51820:51820/udp"                    # основной WireGuard порт
+    volumes:
+      - wg-easy-data:/etc/wireguard
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv6.conf.all.forwarding=1
+    restart: unless-stopped
+
+volumes:
+  wg-easy-data:
