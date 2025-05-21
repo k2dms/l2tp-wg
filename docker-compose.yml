@@ -8,12 +8,12 @@ services:
       - NET_ADMIN
       - SYS_MODULE
     environment:
-      - WG_HOST=your.public.ip.address       # Укажи свой внешний IP или домен
-      - PASSWORD=supersecurepassword         # Пароль для входа в web-интерфейс
-      - WG_PORT=51820                        # порт для самого WireGuard (можно кастомизировать)
+      - WG_HOST=${WG_HOST}
+      - PASSWORD=${WG_PASSWORD}
+      - WG_PORT=${WG_PORT}
     ports:
-      - "51822:51821"                        # веб-панель доступна на http://host:51822
-      - "51820:51820/udp"                    # основной WireGuard порт
+      - "${WG_WEB_PORT}:51821"
+      - "${WG_PORT}:${WG_PORT}/udp"
     volumes:
       - wg-easy-data:/etc/wireguard
     sysctls:
@@ -21,5 +21,23 @@ services:
       - net.ipv6.conf.all.forwarding=1
     restart: unless-stopped
 
+  l2tp-vpn:
+    image: hwdsl2/ipsec-vpn-server
+    container_name: l2tp-vpn
+    cap_add:
+      - NET_ADMIN
+    privileged: true
+    environment:
+      - VPN_IPSEC_PSK=${L2TP_PSK}
+      - VPN_USER=${L2TP_USER}
+      - VPN_PASSWORD=${L2TP_PASSWORD}
+    ports:
+      - "500:500/udp"      # IKE (IPSec)
+      - "4500:4500/udp"    # NAT-T
+    volumes:
+      - ./xl2tpd.conf:/etc/xl2tpd/xl2tpd.conf:ro
+    restart: unless-stopped
+
 volumes:
   wg-easy-data: {}
+
